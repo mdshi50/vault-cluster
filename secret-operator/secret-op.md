@@ -4,7 +4,7 @@
 git clone https://github.com/hashicorp-education/learn-vault-secrets-operator
 ```
 ### Configuration from vault server:
-* Exec shell using `kubectl exec --stdin=true --tty=true vault-0 -n vault -- /bin/sh`
+* Exec shell using `kubectl exec --stdin=true --tty=true vault-0 -n vault -- /bin/sh`.fisrtly login to vault using `vault login` and put your root token
 * move into tmp and enable auth method
 ```
 cd tmp
@@ -13,13 +13,14 @@ vault write auth/demo-auth-mount/config \
    kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443"
 ```
 * Enable kv v2 secret engine with`vault secrets enable -path=kvv2 kv-v2`.
-* Create vault policy using following command.
+* Create vault policy using following commands.
 ```
 tee webapp.json <<EOF
 path "kvv2/data/webapp/config" {
    capabilities = ["read", "list"]
 }
 EOF
+vault policy write webapp webapp.json 
 ```
 * Create role that uses above policy.
 ```
@@ -34,7 +35,6 @@ vault write auth/demo-auth-mount/role/role1 \
 
 ### Applying VSO:
 * Install secret operator using `helm install vault-secrets-operator hashicorp/vault-secrets-operator -n vault-secrets-operator-system --create-namespace --values vault/vault-operator-values.yaml`
-
 * Create a ns where secret needs to be synced.`kubectl create ns app`
 * Apply auth secret with `kubectl apply -f vault/vault-auth-static.yaml`
 * Apply static secret with `kubectl apply -f vault/static-secret.yaml`
